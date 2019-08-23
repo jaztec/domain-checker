@@ -1,5 +1,6 @@
 package checker
 
+// Status wraps statuses this package will act upon
 type Status uint8
 
 var (
@@ -41,7 +42,7 @@ func CheckDomain(name string, clients []Client) []ClientStatus {
 	results := make([]ClientStatus, 0, len(clients))
 
 	for _, c := range clients {
-		if s, err := c.CheckDomain(name); err != nil {
+		if s, err := c.CheckDomain(name); err == nil {
 			results = append(results, ClientStatus{c, s, name})
 		}
 	}

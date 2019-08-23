@@ -2,6 +2,7 @@ package checker
 
 import "fmt"
 
+// Error defines a structured error this package will use
 type Error struct {
 	client Client
 	err error

@@ -1,7 +1,7 @@
 # Project information
 VERSION? := $(shell git describe --tags)
 BUILD := $(shell git rev-parse --short HEAD)
-PROJECTNAME := $(shell basename "$(PWD)")
+PROJECTNAME := checker
 
 # Go build variables
 GOBASE := $(shell pwd)
@@ -30,8 +30,7 @@ lint: ## Lint the files
 
 build: dep test ## Build the binary file
 	@printf "\033[36m%-30s\033[0m\n" "Build binaries"
-	@mkdir -p ./bin/limbo
-	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build $(LDFLAGS) -o $(GOBIN)/limbo/limbo $(CMD)/$(PROJECTNAME)
+	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build $(LDFLAGS) -o $(GOBIN)/checker $(CMD)/$(PROJECTNAME)
 
 race: lint ## Run race tests on the library
 	@printf "\033[36m%-30s\033[0m\n" "Perform race tests"
