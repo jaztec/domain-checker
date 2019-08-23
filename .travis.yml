@@ -1,0 +1,19 @@
+
+language: go
+
+go:
+  - 1.12.x
+  - tip
+
+git:
+  depth: 1
+
+install:
+  - export GOPATH="$HOME/gopath"
+  - go get -v -t -d github.com/jaztec/domain-checker/...
+
+script:
+  - go test -v -cover github.com/jaztec/domain-checker/...
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
