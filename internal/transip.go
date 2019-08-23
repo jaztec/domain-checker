@@ -31,6 +31,11 @@ func (t *transip) CheckDomain(n string) (s checker.Status, err error) {
 	return
 }
 
+// RegisterDomain will try and register a certain domain name at the TransIP API.
+func (t *transip) RegisterDomain(string) (checker.Status, error) {
+	return checker.Processing, nil // TODO fix this up
+}
+
 // NewTransIP returns a new client for site validations at TransIP
 func NewTransIP(accountName, keyPath string) (checker.Client, error) {
 	c, err := gotransip.NewSOAPClient(gotransip.ClientConfig{

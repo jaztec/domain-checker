@@ -1,5 +1,10 @@
 package checker
 
+import (
+	"golang.org/x/xerrors"
+	"log"
+)
+
 // Status wraps statuses this package will act upon
 type Status uint8
 
@@ -44,8 +49,23 @@ func CheckDomain(name string, clients []Client) []ClientStatus {
 	for _, c := range clients {
 		if s, err := c.CheckDomain(name); err == nil {
 			results = append(results, ClientStatus{c, s, name})
+		} else {
+			log.Printf("%v", xerrors.Errorf("received error from provider '%T' while checking domain '%s': %w", c, name, err))
 		}
 	}
 
 	return results
+}
+
+// RegisterDomain will try to register a domain at a slice of given clients. The first one to return a valid response
+// will own the domain. Please sort the clients in order of preference.
+func RegisterDomain(name string, clients []Client) (s Status, err error) {
+	for _, c := range clients {
+		if s, err = c.RegisterDomain(name); err == nil && (s == Owned || s == Processing) {
+			return
+		} else if err != nil {
+			log.Printf("%v", xerrors.Errorf("received error from provider '%T' while trying to register domain '%s': %w", c, name, err))
+		}
+	}
+	return
 }
