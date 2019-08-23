@@ -6,12 +6,12 @@ import (
 	"testing"
 )
 
-type errClient struct {}
+type errClient struct{}
 
 func (errClient) CheckDomain(string) (Status, error) { return Unavailable, nil }
 
-func TestNewError (t *testing.T) {
-	t.Run("Test creating error", func (t *testing.T) {
+func TestNewError(t *testing.T) {
+	t.Run("Test creating error", func(t *testing.T) {
 		msg := "random testing error message"
 		expect := "checker.errClient: " + msg
 		err := NewError(errClient{}, errors.New(msg))

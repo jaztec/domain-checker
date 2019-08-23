@@ -5,7 +5,7 @@ import "fmt"
 // Error defines a structured error this package will use
 type Error struct {
 	client Client
-	err error
+	err    error
 }
 
 func (e Error) Error() string {
@@ -13,6 +13,6 @@ func (e Error) Error() string {
 }
 
 // NewError returns an structured error
-func NewError (client Client, err error) Error {
+func NewError(client Client, err error) Error {
 	return Error{client, err}
 }

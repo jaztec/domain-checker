@@ -7,15 +7,15 @@ import (
 
 const errorMessage = "some error message"
 
-type availableClient struct {}
-type unavailableClient struct {}
-type ownedClient struct {}
-type errorClient struct {}
+type availableClient struct{}
+type unavailableClient struct{}
+type ownedClient struct{}
+type errorClient struct{}
 
-func (availableClient) CheckDomain(string) (Status, error) { return Available, nil }
+func (availableClient) CheckDomain(string) (Status, error)   { return Available, nil }
 func (unavailableClient) CheckDomain(string) (Status, error) { return Unavailable, nil }
-func (ownedClient) CheckDomain(string) (Status, error) { return Owned, nil }
-func (errorClient) CheckDomain(string) (Status, error) { return Unavailable, errors.New(errorMessage) }
+func (ownedClient) CheckDomain(string) (Status, error)       { return Owned, nil }
+func (errorClient) CheckDomain(string) (Status, error)       { return Unavailable, errors.New(errorMessage) }
 
 type expectedCheckDomainResult struct {
 	client Client
@@ -23,7 +23,7 @@ type expectedCheckDomainResult struct {
 }
 
 func TestCheckDomain(t *testing.T) {
-	t.Run("Test statuses", func (t *testing.T) {
+	t.Run("Test statuses", func(t *testing.T) {
 		clients := []Client{
 			availableClient{},
 			unavailableClient{},

@@ -16,8 +16,8 @@ var (
 
 // ClientStatus tells the status for a domain for a specific domain
 type ClientStatus struct {
-	c Client
-	s Status
+	c      Client
+	s      Status
 	domain string
 }
 
