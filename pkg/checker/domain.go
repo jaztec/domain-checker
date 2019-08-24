@@ -60,6 +60,7 @@ func CheckDomain(name string, clients []Client) []ClientStatus {
 // RegisterDomain will try to register a domain at a slice of given clients. The first one to return a valid response
 // will own the domain. Please sort the clients in order of preference.
 func RegisterDomain(name string, clients []Client) (s Status, err error) {
+	s = Unavailable
 	for _, c := range clients {
 		if s, err = c.RegisterDomain(name); err == nil && (s == Owned || s == Processing) {
 			return

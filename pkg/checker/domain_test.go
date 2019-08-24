@@ -11,20 +11,26 @@ type expectedCheckDomainResult struct {
 	status Status
 }
 
+var (
+	clients = []Client{
+		availableClient{},
+		unavailableClient{},
+		ownedClient{},
+		processingClient{},
+		errorClient{},
+	}
+	name = "irrelevant"
+)
+
 func TestCheckDomain(t *testing.T) {
 	t.Run("Test statuses", func(t *testing.T) {
-		clients := []Client{
-			availableClient{},
-			unavailableClient{},
-			ownedClient{},
-			errorClient{},
-		}
-		name := "irrelevant"
-		expectLen := 3
+
+		expectLen := len(clients) - 1
 		expectedResults := []expectedCheckDomainResult{
 			{clients[0], Available},
 			{clients[1], Unavailable},
 			{clients[2], Owned},
+			{clients[3], Processing},
 		}
 
 		statuses := CheckDomain(name, clients)
@@ -54,5 +60,11 @@ func TestCheckDomain(t *testing.T) {
 }
 
 func TestRegisterDomain(t *testing.T) {
+	t.Run("Test registering domains", func(t *testing.T) {
+		for range clients {
+			if _, err := RegisterDomain(name, clients); err != nil {
 
+			}
+		}
+	})
 }
