@@ -48,11 +48,11 @@ func TestCheckDomain(t *testing.T) {
 				t.Fail()
 			}
 			if status.Client() != s.client {
-				t.Logf("Expected %T from status but received %T", s.client, status.Client())
+				t.Logf("Expected %T from client but received %T", s.client, status.Client())
 				t.Fail()
 			}
 			if status.Domain() != name {
-				t.Logf("Expected %s from status but received %s", name, status.Domain())
+				t.Logf("Expected %s from domain but received %s", name, status.Domain())
 				t.Fail()
 			}
 		}
