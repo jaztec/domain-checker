@@ -41,8 +41,8 @@ func (cs *ClientStatus) Domain() string {
 	return cs.domain
 }
 
-// CheckDomain will walk though the provided clients and check on all of them if a specific domain
-// is available. The clients will be checked in order of appearance.
+// CheckDomain will walk though the provided domainClients and check on all of them if a specific domain
+// is available. The domainClients will be checked in order of appearance.
 func CheckDomain(name string, clients []Client) []ClientStatus {
 	results := make([]ClientStatus, 0, len(clients))
 
@@ -57,9 +57,10 @@ func CheckDomain(name string, clients []Client) []ClientStatus {
 	return results
 }
 
-// RegisterDomain will try to register a domain at a slice of given clients. The first one to return a valid response
-// will own the domain. Please sort the clients in order of preference.
-func RegisterDomain(name string, clients []Client) (s Status, err error) {
+// RegisterDomain will try to register a domain at a slice of given domainClients. The first one to return a valid response
+// will own the domain. Please sort the domainClients in order of preference.
+func RegisterDomain(name string, clients []Client) (s Status) {
+	var err error
 	s = Unavailable
 	for _, c := range clients {
 		if s, err = c.RegisterDomain(name); err == nil && (s == Owned || s == Processing) {

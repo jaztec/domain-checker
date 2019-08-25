@@ -12,12 +12,21 @@ type expectedCheckDomainResult struct {
 }
 
 var (
-	clients = []Client{
+	domainClients = []Client{
 		availableClient{},
 		unavailableClient{},
 		ownedClient{},
 		processingClient{},
 		errorClient{},
+	}
+	registerClientsSuccess = []Client{
+		errorClient{},
+		unavailableClient{},
+		ownedClient{},
+	}
+	registerClientsFailure = []Client{
+		errorClient{},
+		unavailableClient{},
 	}
 	name = "irrelevant"
 )
@@ -25,15 +34,15 @@ var (
 func TestCheckDomain(t *testing.T) {
 	t.Run("Test statuses", func(t *testing.T) {
 
-		expectLen := len(clients) - 1
+		expectLen := len(domainClients) - 1
 		expectedResults := []expectedCheckDomainResult{
-			{clients[0], Available},
-			{clients[1], Unavailable},
-			{clients[2], Owned},
-			{clients[3], Processing},
+			{domainClients[0], Available},
+			{domainClients[1], Unavailable},
+			{domainClients[2], Owned},
+			{domainClients[3], Processing},
 		}
 
-		statuses := CheckDomain(name, clients)
+		statuses := CheckDomain(name, domainClients)
 
 		if gotLen := len(statuses); gotLen != expectLen {
 			t.Logf("Expected %d result statuses but received %d", expectLen, gotLen)
@@ -60,11 +69,16 @@ func TestCheckDomain(t *testing.T) {
 }
 
 func TestRegisterDomain(t *testing.T) {
-	t.Run("Test registering domains", func(t *testing.T) {
-		for range clients {
-			if _, err := RegisterDomain(name, clients); err != nil {
-
-			}
+	t.Run("Test registering domains with success", func(t *testing.T) {
+		if s := RegisterDomain(name, registerClientsSuccess); s != Owned {
+			t.Logf("Expected %d result, got %d", Owned, s)
+			t.Fail()
+		}
+	})
+	t.Run("Test registering domains with failure", func(t *testing.T) {
+		if s := RegisterDomain(name, registerClientsFailure); s != Unavailable {
+			t.Logf("Expected %d result, got %d", Unavailable, s)
+			t.Fail()
 		}
 	})
 }
