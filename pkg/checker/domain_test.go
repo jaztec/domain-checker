@@ -70,14 +70,14 @@ func TestCheckDomain(t *testing.T) {
 
 func TestRegisterDomain(t *testing.T) {
 	t.Run("Test registering domains with success", func(t *testing.T) {
-		if s := RegisterDomain(name, registerClientsSuccess); s != Owned {
-			t.Logf("Expected %d result, got %d", Owned, s)
+		if s := RegisterDomain(name, registerClientsSuccess); s.Status() != Owned {
+			t.Logf("Expected %d result, got %d", Owned, s.Status())
 			t.Fail()
 		}
 	})
 	t.Run("Test registering domains with failure", func(t *testing.T) {
-		if s := RegisterDomain(name, registerClientsFailure); s != Unavailable {
-			t.Logf("Expected %d result, got %d", Unavailable, s)
+		if s := RegisterDomain(name, registerClientsFailure); s.Status() != Unavailable {
+			t.Logf("Expected %d result, got %d", Unavailable, s.Status())
 			t.Fail()
 		}
 	})
