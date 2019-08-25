@@ -5,6 +5,7 @@ import (
 	"github.com/transip/gotransip"
 	transipDomain "github.com/transip/gotransip/domain"
 	"golang.org/x/xerrors"
+	"log"
 )
 
 type transip struct {
@@ -32,8 +33,13 @@ func (t *transip) CheckDomain(n string) (s checker.Status, err error) {
 }
 
 // RegisterDomain will try and register a certain domain name at the TransIP API.
-func (t *transip) RegisterDomain(string) (checker.Status, error) {
-	return checker.Processing, nil // TODO fix this up
+func (t *transip) RegisterDomain(name string) (checker.Status, error) {
+	err := transipDomain.Register(t.client, transipDomain.Domain{Name: name})
+	if err != nil {
+		return checker.Unavailable, err
+	}
+	log.Printf("domain '%s' registered at TransIP", name)
+	return checker.Processing, nil
 }
 
 // NewTransIP returns a new client for site validations at TransIP
