@@ -32,13 +32,9 @@ build: dep test ## Build the binary file
 	@printf "\033[36m%-30s\033[0m\n" "Build binaries"
 	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build $(LDFLAGS) -o $(GOBIN)/checker $(CMD)/$(PROJECTNAME)
 
-race: lint ## Run race tests on the library
-	@printf "\033[36m%-30s\033[0m\n" "Perform race tests"
-	@go test ./... -race -timeout 10000ms
-
-test: lint race ## Test the library
+test: lint ## Test the library
 	@printf "\033[36m%-30s\033[0m\n" "Perform covered tests"
-	@go test ./... -coverprofile artifacts/cover.out
+	@go test -race -timeout 10000ms ./... -coverprofile artifacts/cover.out
 	@go tool cover -html=artifacts/cover.out -o artifacts/cover.html
 	@go tool cover -func=artifacts/cover.out
 

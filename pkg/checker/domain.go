@@ -1,8 +1,9 @@
 package checker
 
 import (
-	"golang.org/x/xerrors"
 	"log"
+
+	"golang.org/x/xerrors"
 )
 
 // Status wraps statuses this package will act upon

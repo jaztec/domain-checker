@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/jaztec/domain-checker/pkg/checker"
 	"log"
 	"time"
+
+	"github.com/jaztec/domain-checker/pkg/checker"
 )
 
 func loadClients() []checker.Client {
@@ -30,6 +31,6 @@ func main() {
 			}
 		}
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(60 * time.Second)
 	}
 }
