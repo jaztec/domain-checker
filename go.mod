@@ -3,7 +3,7 @@ module github.com/jaztec/domain-checker
 go 1.12
 
 require (
-	github.com/go-redis/redis v6.15.5+incompatible // indirect
+	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/transip/gotransip v5.8.2+incompatible
-	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7 // indirect
 )

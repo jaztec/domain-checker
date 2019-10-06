@@ -1,7 +1,6 @@
 # Project information
 VERSION? := $(shell git describe --tags)
 BUILD := $(shell git rev-parse --short HEAD)
-PROJECTNAME := checker
 
 # Go build variables
 GOBASE := $(shell pwd)
@@ -28,9 +27,10 @@ lint: ## Lint the files
 	@golint internal/...
 	@golint cmd/...
 
-build: dep test ## Build the binary file
+build: dep test ## Build the binary files
 	@printf "\033[36m%-30s\033[0m\n" "Build binaries"
-	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build $(LDFLAGS) -o $(GOBIN)/checker $(CMD)/$(PROJECTNAME)
+	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build $(LDFLAGS) -o $(GOBIN)/checker $(CMD)/checker
+	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build $(LDFLAGS) -o $(GOBIN)/cli $(CMD)/cli
 
 test: lint ## Test the library
 	@printf "\033[36m%-30s\033[0m\n" "Perform covered tests"

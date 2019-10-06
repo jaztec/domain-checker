@@ -1,9 +1,8 @@
 package checker
 
 import (
+	"fmt"
 	"log"
-
-	"golang.org/x/xerrors"
 )
 
 // Status wraps statuses this package will act upon
@@ -51,7 +50,7 @@ func CheckDomain(name string, clients []Client) []ClientStatus {
 		if s, err := c.CheckDomain(name); err == nil {
 			results = append(results, ClientStatus{c, s, name})
 		} else {
-			log.Printf("%v", xerrors.Errorf("received error from provider '%T' while checking domain '%s': %w", c, name, err))
+			log.Printf("%v", fmt.Errorf("received error from provider '%T' while checking domain '%s': %w", c, name, err))
 		}
 	}
 
@@ -70,7 +69,7 @@ func RegisterDomain(name string, clients []Client) (cs ClientStatus) {
 			}
 			return
 		} else if err != nil {
-			log.Printf("%v", xerrors.Errorf("received error from provider '%T' while trying to register domain '%s': %w", c, name, err))
+			log.Printf("%v", fmt.Errorf("received error from provider '%T' while trying to register domain '%s': %w", c, name, err))
 		}
 	}
 	return

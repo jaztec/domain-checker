@@ -2,5 +2,4 @@ github.com/go-redis/redis v6.15.5+incompatible h1:pLky8I0rgiblWfa8C1EV7fPEUv0aH6
 github.com/go-redis/redis v6.15.5+incompatible/go.mod h1:NAIEuMOZ/fxfXJIrKDQDz8wamY7mA7PouImQ2Jvg6kA=
 github.com/transip/gotransip v5.8.2+incompatible h1:aNJhw/w/3QBqFcHAIPz1ytoK5FexeMzbUCGrrhWr3H0=
 github.com/transip/gotransip v5.8.2+incompatible/go.mod h1:uacMoJVmrfOcscM4Bi5NVg708b7c6rz2oDTWqa7i2Ic=
-golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7 h1:9zdDQZ7Thm29KFXgAX/+yaf3eVbP7djjWp/dXAppNCc=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
