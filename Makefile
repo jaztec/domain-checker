@@ -6,12 +6,11 @@ BUILD := $(shell git rev-parse --short HEAD)
 GOBASE := $(shell pwd)
 GOPATH := $(GOBASE)/vendor:$(GOBASE)
 GOBIN := $(GOBASE)/bin
-GOFILES := $(wildcard *.go)
 
 CMD := $(GOBASE)/cmd
 
 # Linker flags
-LDFLAGS=-v -ldflags "-X=main.Version=$(VERSION) -X=main.Build=$(BUILD)"
+LDFLAGS=-v -ldflags "-w -s -X=main.Version=$(VERSION) -X=main.Build=$(BUILD)"
 
 .PHONY: all build clean lint
 
@@ -23,7 +22,6 @@ dep: clean ## Confirm vendor directory with dependencies
 
 lint: ## Lint the files
 	@printf "\033[36m%-30s\033[0m\n" "Lint source code"
-	@golint pkg/...
 	@golint internal/...
 	@golint cmd/...
 
@@ -32,9 +30,10 @@ build: dep test ## Build the binary files
 	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build $(LDFLAGS) -o $(GOBIN)/checker $(CMD)/checker
 	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go build $(LDFLAGS) -o $(GOBIN)/cli $(CMD)/cli
 
-test: lint ## Test the library
+test: ## Test the library
 	@printf "\033[36m%-30s\033[0m\n" "Perform covered tests"
-	@go test -race -timeout 10000ms ./... -coverprofile artifacts/cover.out
+	@go test -race -timeout 10000ms
+	@go test ./... -coverprofile artifacts/cover.out
 	@go tool cover -html=artifacts/cover.out -o artifacts/cover.html
 	@go tool cover -func=artifacts/cover.out
 

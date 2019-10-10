@@ -61,6 +61,7 @@ func (s *server) handle(c net.Conn) {
 				}
 				s.checking.removeDomain(cmd[1])
 			case "STOP":
+				s.close()
 				return
 			default:
 				// ignore

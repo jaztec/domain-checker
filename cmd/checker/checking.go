@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/jaztec/domain-checker/pkg/checker"
+	checker "github.com/jaztec/domain-checker"
 )
 
 type checking struct {

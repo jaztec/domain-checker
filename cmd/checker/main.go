@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	"github.com/go-redis/redis"
+	checker "github.com/jaztec/domain-checker"
 	"github.com/jaztec/domain-checker/internal"
-	"github.com/jaztec/domain-checker/pkg/checker"
 )
 
 // RedisListKey defines the key within Redis that is used for
@@ -53,25 +53,27 @@ func main() {
 	// get Redis connection going to keep track of requested domains
 	// over restarts. If no Redis connection can be established the
 	// program will continue without persisten storage.
+	var r *redis.Client
 	dsn := os.Getenv("REDIS_DSN")
 	password := os.Getenv("REDIS_PASSWORD")
 	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
 	if err != nil {
 		log.Printf("%v\n", fmt.Errorf("error while loading Redis db variable: %w", err))
-	}
-	r, err := startRedis(dsn, password, db)
-	if err != nil {
-		log.Printf("%v\n", (fmt.Errorf("error while conecting to Redis: %w", err)))
 	} else {
-		if n, err := r.LLen(RedisListKey).Result(); err != nil {
-			var i int64
-			for ; i < n; i++ {
-				if s, err := r.RPop(RedisListKey).Result(); err == nil {
-					domains = append(domains, s)
+		r, err := startRedis(dsn, password, db)
+		if err != nil {
+			log.Printf("%v\n", (fmt.Errorf("error while conecting to Redis: %w", err)))
+		} else {
+			if n, err := r.LLen(RedisListKey).Result(); err != nil {
+				var i int64
+				for ; i < n; i++ {
+					if s, err := r.RPop(RedisListKey).Result(); err == nil {
+						domains = append(domains, s)
+					}
 				}
 			}
+			defer r.Close()
 		}
-		defer r.Close()
 	}
 
 	// run the checking loops

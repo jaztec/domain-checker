@@ -3,7 +3,7 @@ package internal
 import (
 	"fmt"
 
-	"github.com/jaztec/domain-checker/pkg/checker"
+	checker "github.com/jaztec/domain-checker"
 	"github.com/transip/gotransip"
 	transipDomain "github.com/transip/gotransip/domain"
 )
