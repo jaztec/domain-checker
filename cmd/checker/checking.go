@@ -52,6 +52,7 @@ func (c *checking) addDomain(name string) {
 		c.domains = append(c.domains, name)
 	}
 	c.persistRedis()
+	log.Printf("Added domain \"%s\"", name)
 }
 
 func (c *checking) removeDomain(name string) {
@@ -60,6 +61,7 @@ func (c *checking) removeDomain(name string) {
 		c.domains = d[:i+copy(d[i:], d[i+1:])]
 	}
 	c.persistRedis()
+	log.Printf("Removed domain \"%s\"", name)
 }
 
 func (c *checking) listDomains() []string {

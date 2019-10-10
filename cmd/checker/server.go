@@ -44,11 +44,14 @@ func (s *server) handle(c net.Conn) {
 		default:
 			d, err := bufio.NewReader(c).ReadString('\n')
 			if err != nil {
-				log.Printf("an error occured: %v", err)
+				log.Printf("an error occured with %s: %v", c.RemoteAddr().String(), err)
 				return
 			}
 
 			cmd := strings.Fields(string(d))
+			if len(cmd) == 0 {
+				continue
+			}
 			switch cmd[0] {
 			case "ADD":
 				if len(cmd) < 2 {
@@ -60,8 +63,15 @@ func (s *server) handle(c net.Conn) {
 					break
 				}
 				s.checking.removeDomain(cmd[1])
-			case "STOP":
-				s.close()
+			case "LIST":
+				domains := s.checking.listDomains()
+				for _, domain := range domains {
+					_, _ = c.Write([]byte(domain + "\n"))
+				}
+			case "CLOSE":
+				log.Printf("Closing connection from \"%s\"", c.RemoteAddr().String())
+				_, _ = c.Write([]byte("Closing connection\n"))
+				c.Close()
 				return
 			default:
 				// ignore
