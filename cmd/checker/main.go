@@ -34,8 +34,8 @@ func startRedis(dsn, password string, db int) (*redis.Client, error) {
 	return client, nil
 }
 
-func loadClients() []checker.Client {
-	c := make([]checker.Client, 0, 5)
+func loadClients() []checker.Registrar {
+	c := make([]checker.Registrar, 0, 5)
 
 	transIPName := os.Getenv("TRANSIP_ACCOUNT_NAME")
 	transIPKey := os.Getenv("TRANSIP_KEY_FILE_PATH")

@@ -42,7 +42,7 @@ func (t *transip) RegisterDomain(name string) (checker.Status, error) {
 }
 
 // NewTransIP returns a new client for site validations at TransIP
-func NewTransIP(accountName, keyPath string) (checker.Client, error) {
+func NewTransIP(accountName, keyPath string) (checker.Registrar, error) {
 	c, err := gotransip.NewSOAPClient(gotransip.ClientConfig{
 		AccountName:    accountName,
 		PrivateKeyPath: keyPath,

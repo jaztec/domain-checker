@@ -1,8 +1,8 @@
 package checker
 
-// Client interface defines some methods we want external services to present to us such as but not
+// Registrar interface defines some methods we want external services to present to us such as but not
 // limited to domain availability checks and registration
-type Client interface {
+type Registrar interface {
 	// CheckDomain returns a status about the requested domain.
 	CheckDomain(string) (Status, error)
 	// Register domain will try and register the domain name

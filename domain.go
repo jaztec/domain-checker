@@ -20,35 +20,35 @@ var (
 )
 
 // ClientStatus tells the status for a domain for a specific domain
-type ClientStatus struct {
-	c      Client
+type RegistrarStatus struct {
+	c      Registrar
 	s      Status
 	domain string
 }
 
-// Client reports the client to which this status applies
-func (cs *ClientStatus) Client() Client {
+// Registrar reports the registrar to which this status applies
+func (cs *RegistrarStatus) Registrar() Registrar {
 	return cs.c
 }
 
 // Status reports the actual status for this domain with this client
-func (cs *ClientStatus) Status() Status {
+func (cs *RegistrarStatus) Status() Status {
 	return cs.s
 }
 
 // Domain reports the domain name requested
-func (cs *ClientStatus) Domain() string {
+func (cs *RegistrarStatus) Domain() string {
 	return cs.domain
 }
 
-// CheckDomain will walk though the provided domainClients and check on all of them if a specific domain
+// CheckDomain will walk though the provided domainRegistrars and check on all of them if a specific domain
 // is available. The domainClients will be checked in order of appearance.
-func CheckDomain(name string, clients []Client) []ClientStatus {
-	results := make([]ClientStatus, 0, len(clients))
+func CheckDomain(name string, clients []Registrar) []RegistrarStatus {
+	results := make([]RegistrarStatus, 0, len(clients))
 
 	for _, c := range clients {
 		if s, err := c.CheckDomain(name); err == nil {
-			results = append(results, ClientStatus{c, s, name})
+			results = append(results, RegistrarStatus{c, s, name})
 		} else {
 			log.Printf("%v", fmt.Errorf("received error from provider '%T' while checking domain '%s': %w", c, name, err))
 		}
@@ -57,12 +57,12 @@ func CheckDomain(name string, clients []Client) []ClientStatus {
 	return results
 }
 
-// RegisterDomain will try to register a domain at a slice of given domainClients. The first one to return a valid response
+// RegisterDomain will try to register a domain at a slice of given domainRegistrars. The first one to return a valid response
 // will own the domain. Please sort the domainClients in order of preference.
-func RegisterDomain(name string, clients []Client) (cs ClientStatus) {
+func RegisterDomain(name string, clients []Registrar) (cs RegistrarStatus) {
 	for _, c := range clients {
 		if s, err := c.RegisterDomain(name); err == nil && (s == Owned || s == Processing) {
-			cs = ClientStatus{
+			cs = RegistrarStatus{
 				c:      c,
 				s:      s,
 				domain: name,

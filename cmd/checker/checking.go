@@ -10,21 +10,21 @@ import (
 )
 
 type checking struct {
-	redis   *redis.Client
-	lock    sync.RWMutex
-	domains []string
-	clients []checker.Client
+	redis      *redis.Client
+	lock       sync.RWMutex
+	domains    []string
+	registrars []checker.Registrar
 }
 
 func (c *checking) runChecks() {
 	for {
 		c.lock.RLock()
 		for _, name := range c.domains {
-			statuses := checker.CheckDomain(name, c.clients)
+			statuses := checker.CheckDomain(name, c.registrars)
 			for _, s := range statuses {
 				if s.Status() == checker.Available {
-					if s := checker.RegisterDomain(name, c.clients); s.Status() == checker.Owned || s.Status() == checker.Processing {
-						log.Printf("Registered '%s' at %T", name, s.Client())
+					if s := checker.RegisterDomain(name, c.registrars); s.Status() == checker.Owned || s.Status() == checker.Processing {
+						log.Printf("Registered '%s' at %T", name, s.Registrar())
 					}
 					break
 				}
@@ -81,7 +81,7 @@ func (c *checking) persistRedis() {
 	}
 }
 
-func newChecking(domains []string, clients []checker.Client, r *redis.Client) *checking {
+func newChecking(domains []string, clients []checker.Registrar, r *redis.Client) *checking {
 	return &checking{
 		redis:   r,
 		domains: domains,
