@@ -20,10 +20,10 @@ func (c *checking) runChecks() {
 	for {
 		c.lock.RLock()
 		for _, name := range c.domains {
-			statuses := checker.CheckDomain(name, c.registrars)
+			statuses, _ := checker.CheckDomain(name, c.registrars)
 			for _, s := range statuses {
 				if s.Status() == checker.Available {
-					if s := checker.RegisterDomain(name, c.registrars); s.Status() == checker.Owned || s.Status() == checker.Processing {
+					if s, _ := checker.RegisterDomain(name, c.registrars); s.Status() == checker.Owned || s.Status() == checker.Processing {
 						log.Printf("Registered '%s' at %T", name, s.Registrar())
 					}
 					break

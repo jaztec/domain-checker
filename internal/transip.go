@@ -49,7 +49,7 @@ func NewTransIP(accountName, keyPath string) (checker.Registrar, error) {
 		Mode:           gotransip.APIModeReadWrite,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error creating TransIP client: %w", err)
+		return nil, fmt.Errorf("error creating TransIP client: %v", err)
 	}
 	t := &transip{&c}
 	return t, nil

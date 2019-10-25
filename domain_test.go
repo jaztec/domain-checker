@@ -42,7 +42,7 @@ func TestCheckDomain(t *testing.T) {
 			{domainRegistrars[3], Processing},
 		}
 
-		statuses := CheckDomain(name, domainRegistrars)
+		statuses, _ := CheckDomain(name, domainRegistrars)
 
 		if gotLen := len(statuses); gotLen != expectLen {
 			t.Logf("Expected %d result statuses but received %d", expectLen, gotLen)
@@ -70,13 +70,13 @@ func TestCheckDomain(t *testing.T) {
 
 func TestRegisterDomain(t *testing.T) {
 	t.Run("Test registering domains with success", func(t *testing.T) {
-		if s := RegisterDomain(name, registerRegistrarsSuccess); s.Status() != Owned {
+		if s, _ := RegisterDomain(name, registerRegistrarsSuccess); s.Status() != Owned {
 			t.Logf("Expected %d result, got %d", Owned, s.Status())
 			t.Fail()
 		}
 	})
 	t.Run("Test registering domains with failure", func(t *testing.T) {
-		if s := RegisterDomain(name, registerRegistrarsFailure); s.Status() != Unavailable {
+		if s, _ := RegisterDomain(name, registerRegistrarsFailure); s.Status() != Unavailable {
 			t.Logf("Expected %d result, got %d", Unavailable, s.Status())
 			t.Fail()
 		}
