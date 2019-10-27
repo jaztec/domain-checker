@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  checker:
+    image: jaztec/domain-checker:latest
+    restart: always
+    ports:
+      - "127.0.0.1:${PORT}:${PORT}"
+    environment:
+      - PORT
+      - TLS_CERT
+      - TLS_KEY
+      - REDIS_DSN
+      - REDIS_PASSWORD
+      - REDIS_DB
+    volumes:
+      - ./certs:/var/certs:ro

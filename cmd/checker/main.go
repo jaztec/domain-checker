@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
@@ -84,7 +85,14 @@ func main() {
 	if port == "" {
 		panic(errors.New("no valid port received to launch server"))
 	}
-	s, err := newServer(port, c)
+
+	// create a configuration to setup a secure connection
+	cert, err := tls.LoadX509KeyPair(os.Getenv("TLS_CERT"), os.Getenv("TLS_KEY"))
+	if err != nil {
+		panic(err)
+	}
+
+	s, err := newServer(port, c, &tls.Config{Certificates: []tls.Certificate{cert}})
 	if err != nil {
 		panic(fmt.Errorf("error while launching server: %w", err))
 	}

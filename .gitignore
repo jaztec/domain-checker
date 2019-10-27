@@ -2,3 +2,7 @@
 artifacts/
 bin/
 vendor/
+certs/
+
+docker-compose.yml
+.env

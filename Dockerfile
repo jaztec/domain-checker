@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM golang:1.13-alpine as builder
 LABEL maintainer="Jasper van Herpt <jasper.v.herpt@gmail.com>"
 
 # Create user for the app

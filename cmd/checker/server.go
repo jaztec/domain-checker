@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net"
@@ -52,7 +53,7 @@ func (s *server) handle(c net.Conn) {
 			if len(cmd) == 0 {
 				continue
 			}
-			switch cmd[0] {
+			switch strings.ToUpper(cmd[0]) {
 			case "ADD":
 				if len(cmd) < 2 {
 					break
@@ -80,8 +81,8 @@ func (s *server) handle(c net.Conn) {
 	}
 }
 
-func newServer(port string, check *checking) (*server, error) {
-	l, err := net.Listen("tcp", ":"+port)
+func newServer(port string, check *checking, tlsConf *tls.Config) (*server, error) {
+	l, err := tls.Listen("tcp", ":"+port, tlsConf)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured: %w", err)
 	}
