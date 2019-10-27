@@ -53,6 +53,7 @@ func (s *server) handle(c net.Conn) {
 			if len(cmd) == 0 {
 				continue
 			}
+			log.Printf("Process command '%v'", cmd)
 			switch strings.ToUpper(cmd[0]) {
 			case "ADD":
 				if len(cmd) < 2 {
@@ -67,8 +68,9 @@ func (s *server) handle(c net.Conn) {
 			case "LIST":
 				domains := s.checking.listDomains()
 				for _, domain := range domains {
-					_, _ = c.Write([]byte(domain + "\n"))
+					_, _ = c.Write([]byte(domain + " "))
 				}
+				c.Write([]byte("\n"))
 			case "EXIT":
 			case "QUIT":
 			case "CLOSE":
