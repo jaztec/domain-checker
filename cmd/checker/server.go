@@ -69,6 +69,8 @@ func (s *server) handle(c net.Conn) {
 				for _, domain := range domains {
 					_, _ = c.Write([]byte(domain + "\n"))
 				}
+			case "EXIT":
+			case "QUIT":
 			case "CLOSE":
 				log.Printf("Closing connection from \"%s\"", c.RemoteAddr().String())
 				_, _ = c.Write([]byte("Closing connection\n"))
@@ -82,7 +84,13 @@ func (s *server) handle(c net.Conn) {
 }
 
 func newServer(port string, check *checking, tlsConf *tls.Config) (*server, error) {
-	l, err := tls.Listen("tcp", ":"+port, tlsConf)
+	var l net.Listener
+	var err error
+	if tlsConf == nil {
+		l, err = net.Listen("tcp", ":"+port)
+	} else {
+		l, err = tls.Listen("tcp", ":"+port, tlsConf)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("an error occured: %w", err)
 	}

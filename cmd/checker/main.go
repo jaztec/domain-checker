@@ -88,11 +88,17 @@ func main() {
 
 	// create a configuration to setup a secure connection
 	cert, err := tls.LoadX509KeyPair(os.Getenv("TLS_CERT"), os.Getenv("TLS_KEY"))
+	var tlsConfig *tls.Config
 	if err != nil {
-		panic(err)
+		if os.Getenv("TLS_ALLOW_INSECURE") != "true" {
+			panic(err)
+		}
+		log.Println("WARNING: server is started without TLS, please make sure it is not connected to the internet of protected behind a proxy with SSL termination")
+	} else {
+		tlsConfig = &tls.Config{Certificates: []tls.Certificate{cert}}
 	}
 
-	s, err := newServer(port, c, &tls.Config{Certificates: []tls.Certificate{cert}})
+	s, err := newServer(port, c, tlsConfig)
 	if err != nil {
 		panic(fmt.Errorf("error while launching server: %w", err))
 	}

@@ -10,6 +10,7 @@ services:
       - PORT
       - TLS_CERT
       - TLS_KEY
+      - TLS_ALLOW_INSECURE
       - REDIS_DSN
       - REDIS_PASSWORD
       - REDIS_DB
