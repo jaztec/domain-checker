@@ -129,6 +129,7 @@ func createConnection(host string, port int, forceUnsafe, allowUnsafe bool) (net
 
 func readFromConnection(conn net.Conn, wg *sync.WaitGroup) {
 	ch := make(chan string)
+	defer close(ch)
 	go func() {
 		d, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
@@ -141,11 +142,11 @@ func readFromConnection(conn net.Conn, wg *sync.WaitGroup) {
 	for {
 		select {
 		case _ = <-done:
-			close(ch)
 			return
 		case s := <-ch:
 			fmt.Println(s)
 			wg.Done()
+			return
 		}
 	}
 }
