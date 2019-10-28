@@ -54,7 +54,7 @@ func main() {
 		cli.Command{
 			Name:    "list",
 			Aliases: []string{"l"},
-			Usage:   "List all domains the server is currently watching",
+			Usage:   "List all domains the server is currently watching with 'list'",
 			Flags:   f,
 			Action: func(c *cli.Context) error {
 				var wg sync.WaitGroup
@@ -93,6 +93,33 @@ func main() {
 				defer closeConnection(conn)
 
 				_, err := conn.Write([]byte("ADD " + domain + "\n"))
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		},
+		cli.Command{
+			Name:    "remove",
+			Aliases: []string{"r"},
+			Usage:   "Use 'remove [domain]' to add a domain to the checker list",
+			Flags:   f,
+			Action: func(c *cli.Context) error {
+				if len(c.Args()) == 0 {
+					return errors.New("no domain name provided")
+				}
+				if len(c.Args()) > 1 {
+					return fmt.Errorf("too many parameters received: %v", c.Args())
+				}
+				domain := c.Args()[0]
+				if len(domain) > 255 {
+					return fmt.Errorf("domain name contains too many characters: %s", domain)
+				}
+				conn := getConn(c)
+				defer closeConnection(conn)
+
+				_, err := conn.Write([]byte("REMOVE " + domain + "\n"))
 				if err != nil {
 					return err
 				}
