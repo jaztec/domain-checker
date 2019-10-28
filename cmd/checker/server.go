@@ -38,6 +38,7 @@ func (s *server) loop() {
 func (s *server) handle(c net.Conn) {
 	defer c.Close()
 
+	// TODO This code will be blocking while reading the connection stream, it should be moved to another goroutine
 	for {
 		select {
 		case _ = <-s.done:
