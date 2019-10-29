@@ -8,6 +8,7 @@ services:
       - "127.0.0.1:${PORT}:${PORT}"
     environment:
       - PORT
+      - AUTH_TOKEN
       - TLS_CERT
       - TLS_KEY
       - TLS_ALLOW_INSECURE

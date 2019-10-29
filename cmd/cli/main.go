@@ -9,12 +9,20 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"sync"
+	"time"
 
 	"github.com/urfave/cli"
 )
 
 var done = make(chan struct{}, 1)
+
+func doCommand(c net.Conn, cmd string) error {
+	if _, err := c.Write([]byte(cmd)); err != nil {
+		return err
+	}
+	time.Sleep(500 * time.Millisecond)
+	return nil
+}
 
 func main() {
 	app := cli.NewApp()
@@ -25,6 +33,11 @@ func main() {
 			Name:  "host",
 			Value: "localhost",
 			Usage: "Set the hostname of the domain-checker server",
+		},
+		cli.StringFlag{
+			Name:  "token",
+			Value: "",
+			Usage: "Set the token to use to connect to the domain-checker server",
 		},
 		cli.IntFlag{
 			Name:  "port",
@@ -41,15 +54,6 @@ func main() {
 		},
 	}
 
-	getConn := func(c *cli.Context) net.Conn {
-		conn, err := createConnection(c.String("host"), c.Int("port"), c.Bool("force-unsafe"), c.Bool("allow-unsafe"))
-		if err != nil {
-			log.Println(err)
-			os.Exit(1)
-		}
-		return conn
-	}
-
 	app.Commands = []cli.Command{
 		cli.Command{
 			Name:    "list",
@@ -57,19 +61,11 @@ func main() {
 			Usage:   "List all domains the server is currently watching with 'list'",
 			Flags:   f,
 			Action: func(c *cli.Context) error {
-				var wg sync.WaitGroup
-				conn := getConn(c)
+				conn, _ := getConn(c)
 				defer closeConnection(conn)
-				wg.Add(1)
-				go readFromConnection(conn, &wg)
-
-				_, err := conn.Write([]byte("LIST\n"))
-				if err != nil {
+				if err := doCommand(conn, "LIST\n"); err != nil {
 					return err
 				}
-
-				wg.Wait()
-
 				return nil
 			},
 		},
@@ -89,14 +85,12 @@ func main() {
 				if len(domain) > 255 {
 					return fmt.Errorf("domain name contains too many characters: %s", domain)
 				}
-				conn := getConn(c)
+				conn, _ := getConn(c)
 				defer closeConnection(conn)
 
-				_, err := conn.Write([]byte("ADD " + domain + "\n"))
-				if err != nil {
+				if err := doCommand(conn, "ADD "+domain+"\n"); err != nil {
 					return err
 				}
-
 				return nil
 			},
 		},
@@ -116,14 +110,12 @@ func main() {
 				if len(domain) > 255 {
 					return fmt.Errorf("domain name contains too many characters: %s", domain)
 				}
-				conn := getConn(c)
+				conn, _ := getConn(c)
 				defer closeConnection(conn)
 
-				_, err := conn.Write([]byte("REMOVE " + domain + "\n"))
-				if err != nil {
+				if err := doCommand(conn, "REMOVE "+domain+"\n"); err != nil {
 					return err
 				}
-
 				return nil
 			},
 		},
@@ -154,13 +146,27 @@ func createConnection(host string, port int, forceUnsafe, allowUnsafe bool) (net
 	return conn, nil
 }
 
-func readFromConnection(conn net.Conn, wg *sync.WaitGroup) {
+func getConn(c *cli.Context) (net.Conn, error) {
+	conn, err := createConnection(c.String("host"), c.Int("port"), c.Bool("force-unsafe"), c.Bool("allow-unsafe"))
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	go readFromConnection(conn)
+	auth := "AUTH " + c.String("token") + "\n"
+	if _, err := conn.Write([]byte(auth)); err != nil {
+		return nil, err
+	}
+	return conn, nil
+}
+
+func readFromConnection(conn net.Conn) {
 	ch := make(chan string)
 	defer close(ch)
 	go func() {
 		d, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
-			log.Printf("an error occured with %s: %v", conn.RemoteAddr().String(), err)
+			log.Printf("an error occured with %s: %v", conn.RemoteAddr(), err)
 			return
 		}
 
@@ -172,7 +178,6 @@ func readFromConnection(conn net.Conn, wg *sync.WaitGroup) {
 			return
 		case s := <-ch:
 			fmt.Println(s)
-			wg.Done()
 			return
 		}
 	}

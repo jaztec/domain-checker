@@ -98,7 +98,8 @@ func main() {
 		tlsConfig = &tls.Config{Certificates: []tls.Certificate{cert}}
 	}
 
-	s, err := newServer(port, c, tlsConfig)
+	token := os.Getenv("AUTH_TOKEN")
+	s, err := newServer(port, token, c, tlsConfig)
 	if err != nil {
 		panic(fmt.Errorf("error while launching server: %w", err))
 	}

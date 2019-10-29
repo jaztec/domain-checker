@@ -9,10 +9,90 @@ import (
 	"strings"
 )
 
+func isAuthenticated(c *client) bool {
+	if !c.authenticated {
+		c.write("unauthenticated")
+	}
+	return c.authenticated
+}
+
+type command struct {
+	name   string
+	params []string
+}
+
+type client struct {
+	conn          net.Conn
+	authenticated bool
+	commands      chan command
+}
+
+func (c *client) close() {
+	log.Printf("Closing connection to '%s'", c.conn.RemoteAddr())
+	c.conn.Close()
+	close(c.commands)
+}
+
+func (c *client) read() {
+	for {
+		d, err := bufio.NewReader(c.conn).ReadString('\n')
+		if err != nil {
+			if _, ok := err.(*net.OpError); ok {
+				return
+			}
+			log.Printf("an error occured with %s: %T", c.conn.RemoteAddr().String(), err)
+			return
+		}
+
+		cmd := strings.Fields(string(d))
+		if len(cmd) == 0 {
+			continue
+		}
+		name := strings.ToUpper(cmd[0])
+
+		switch name {
+		case "ADD":
+			fallthrough
+		case "AUTH":
+			fallthrough
+		case "REMOVE":
+			if len(cmd) < 2 {
+				break
+			}
+			c.commands <- command{
+				name:   name,
+				params: []string{cmd[1]},
+			}
+
+			if len(cmd) < 2 {
+				break
+			}
+		case "LIST":
+			fallthrough
+		case "EXIT":
+			fallthrough
+		case "QUIT":
+			fallthrough
+		case "CLOSE":
+			c.commands <- command{
+				name:   name,
+				params: []string{},
+			}
+		}
+	}
+}
+
+func (c *client) write(s string) {
+	if _, err := c.conn.Write([]byte(s + "\n")); err != nil {
+		log.Printf("An error occured with connection '%s': %v", c.conn.RemoteAddr(), err)
+	}
+}
+
 type server struct {
 	listener net.Listener
 	done     chan struct{}
 	checking *checking
+	token    string
 }
 
 func (s *server) close() {
@@ -30,54 +110,62 @@ func (s *server) loop() {
 			if err != nil {
 				continue
 			}
-			go s.handle(c)
+			cl := &client{
+				conn:          c,
+				authenticated: false,
+				commands:      make(chan command),
+			}
+			log.Printf("New connection from '%s'", c.RemoteAddr())
+			go s.handle(cl)
 		}
 	}
 }
 
-func (s *server) handle(c net.Conn) {
-	defer c.Close()
+func (s *server) handle(c *client) {
+	defer c.close()
+	go c.read()
 
-	// TODO This code will be blocking while reading the connection stream, it should be moved to another goroutine
 	for {
 		select {
 		case _ = <-s.done:
+			log.Println("'done' channel closed")
 			return
-		default:
-			d, err := bufio.NewReader(c).ReadString('\n')
-			if err != nil {
-				log.Printf("an error occured with %s: %v", c.RemoteAddr().String(), err)
-				return
-			}
-
-			cmd := strings.Fields(string(d))
-			if len(cmd) == 0 {
-				continue
-			}
+		case cmd := <-c.commands:
 			log.Printf("Process command '%v'", cmd)
-			switch strings.ToUpper(cmd[0]) {
+			switch cmd.name {
+			case "AUTH":
+				if cmd.params[0] == s.token {
+					c.authenticated = true
+				} else {
+					c.write("authentication failure")
+				}
 			case "ADD":
-				if len(cmd) < 2 {
+				if !isAuthenticated(c) {
 					break
 				}
-				s.checking.addDomain(cmd[1])
+				s.checking.addDomain(cmd.params[0])
+				c.write(fmt.Sprintf("%s added", cmd.params[0]))
 			case "REMOVE":
-				if len(cmd) < 2 {
+				if !isAuthenticated(c) {
 					break
 				}
-				s.checking.removeDomain(cmd[1])
+				s.checking.removeDomain(cmd.params[0])
+				c.write(fmt.Sprintf("%s removed", cmd.params[0]))
 			case "LIST":
-				domains := s.checking.listDomains()
-				for _, domain := range domains {
-					_, _ = c.Write([]byte(domain + " "))
+				if !isAuthenticated(c) {
+					break
 				}
-				c.Write([]byte("\n"))
+				domains := s.checking.listDomains()
+				res := ""
+				for _, domain := range domains {
+					res += domain + " "
+				}
+				c.write(res)
 			case "EXIT":
+				return
 			case "QUIT":
+				return
 			case "CLOSE":
-				log.Printf("Closing connection from \"%s\"", c.RemoteAddr().String())
-				_, _ = c.Write([]byte("Closing connection\n"))
-				c.Close()
 				return
 			default:
 				// ignore
@@ -86,7 +174,7 @@ func (s *server) handle(c net.Conn) {
 	}
 }
 
-func newServer(port string, check *checking, tlsConf *tls.Config) (*server, error) {
+func newServer(port, token string, check *checking, tlsConf *tls.Config) (*server, error) {
 	var l net.Listener
 	var err error
 	if tlsConf == nil {
@@ -101,6 +189,7 @@ func newServer(port string, check *checking, tlsConf *tls.Config) (*server, erro
 		listener: l,
 		done:     make(chan struct{}, 1),
 		checking: check,
+		token:    token,
 	}
 	go s.loop()
 
