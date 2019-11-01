@@ -281,6 +281,9 @@ func updateConfig(cfg *config, args cli.Args) error {
 
 	// the config option exists and the value is of the correct type
 	fT := t.FieldByName(n)
+	if !fT.CanSet() {
+		return fmt.Errorf("field '%s' is not settable", n)
+	}
 	fT.Set(reflect.ValueOf(value))
 
 	return writeConfig(cfg)

@@ -10,7 +10,7 @@ own. The program will check the domain with the providers available and to which
 you have an account to register it on availability and will register it when it 
 becomes available.
 
-This project is still under development. 
+~~This project is still under development.~~ However I've not written any documentation for it.
 
 
 ### Docker image
