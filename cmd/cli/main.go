@@ -5,16 +5,40 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
+	"os/user"
+	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/urfave/cli"
+	"gopkg.in/yaml.v2"
 )
 
-var done = make(chan struct{}, 1)
+type config struct {
+	Host        string `yaml:"host"`
+	Port        int    `yaml:"port"`
+	Token       string `yaml:"token"`
+	AllowUnsafe bool   `yaml:"allowUnsafe"`
+	ForceUnsafe bool   `yaml:"forceUnsafe"`
+}
+
+var (
+	done       = make(chan struct{}, 1)
+	configFile string
+)
+
+func init() {
+	usr, err := user.Current()
+	if err != nil {
+		panic(err)
+	}
+	configFile = usr.HomeDir + "/.checker-config.yaml"
+}
 
 func doCommand(c net.Conn, cmd string) error {
 	if _, err := c.Write([]byte(cmd)); err != nil {
@@ -28,29 +52,56 @@ func main() {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
 
+	cfg := config{
+		Host: "localhost",
+		Port: 8081,
+	}
+
+	// Load the config file if present
+	if f, err := ioutil.ReadFile(configFile); err == nil {
+		err := yaml.Unmarshal(f, &cfg)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// Make sure env variables are correctly set on bool flags if the config requires them to be set
+	if cfg.AllowUnsafe {
+		os.Setenv("CHECKER_ALLOW_UNSAFE", "true")
+	} else {
+		os.Setenv("CHECKER_ALLOW_UNSAFE", "false")
+	}
+	if cfg.ForceUnsafe {
+		os.Setenv("CHECKER_FORCE_UNSAFE", "true")
+	} else {
+		os.Setenv("CHECKER_FORCE_UNSAFE", "false")
+	}
+
 	f := []cli.Flag{
 		cli.StringFlag{
 			Name:  "host",
-			Value: "localhost",
+			Value: cfg.Host,
 			Usage: "Set the hostname of the domain-checker server",
 		},
 		cli.StringFlag{
 			Name:  "token",
-			Value: "",
+			Value: cfg.Token,
 			Usage: "Set the token to use to connect to the domain-checker server",
 		},
 		cli.IntFlag{
 			Name:  "port",
-			Value: 8081,
+			Value: cfg.Port,
 			Usage: "Set the port of the domain-checker server",
 		},
 		cli.BoolFlag{
-			Name:  "allow-unsafe",
-			Usage: "Use this flag to allow unsafe TLS connections",
+			Name:   "allow-unsafe",
+			Usage:  "Use this flag to allow unsafe TLS connections",
+			EnvVar: "CHECKER_ALLOW_UNSAFE",
 		},
 		cli.BoolFlag{
-			Name:  "force-unsafe",
-			Usage: "Use this flag to force a regular connection",
+			Name:   "force-unsafe",
+			Usage:  "Use this flag to force a regular connection",
+			EnvVar: "CHECKER_FORCE_UNSAFE",
 		},
 	}
 
@@ -117,6 +168,13 @@ func main() {
 					return err
 				}
 				return nil
+			},
+		},
+		cli.Command{
+			Name:  "set",
+			Usage: "Use 'set [name] [value]' to persist variables to the cli tool config",
+			Action: func(c *cli.Context) error {
+				return updateConfig(&cfg, c.Args())
 			},
 		},
 	}
@@ -189,4 +247,49 @@ func closeConnection(conn net.Conn) {
 	if err != nil {
 		log.Fatalf("Fatal exception occured: %v", err)
 	}
+}
+
+func updateConfig(cfg *config, args cli.Args) error {
+	if len(args) != 2 {
+		return errors.New("Invalid arguments provided")
+	}
+
+	n := strings.Title(args[0])
+	v := args[1]
+
+	t := reflect.ValueOf(cfg).Elem()
+	_, found := t.Type().FieldByName(n)
+	if !found {
+		return fmt.Errorf("'%s' is not a valid configuration field", n)
+	}
+
+	var value interface{}
+	if v == "true" {
+		value = true
+	} else if v == "false" {
+		value = false
+	} else if tmp, err := strconv.Atoi(v); err == nil {
+		value = tmp
+	} else {
+		value = v
+	}
+
+	vT := reflect.TypeOf(value)
+	if vT.Kind() != t.FieldByName(n).Type().Kind() {
+		return fmt.Errorf("'%s' is not a valid configuration value for '%s'. Expected '%s'", vT.Kind(), n, t.FieldByName(n).Type().Kind())
+	}
+
+	// the config option exists and the value is of the correct type
+	fT := t.FieldByName(n)
+	fT.Set(reflect.ValueOf(value))
+
+	return writeConfig(cfg)
+}
+
+func writeConfig(cfg *config) (err error) {
+	var b []byte
+	if b, err = yaml.Marshal(*cfg); err != nil {
+		return err
+	}
+	return ioutil.WriteFile(configFile, b, 0644)
 }
