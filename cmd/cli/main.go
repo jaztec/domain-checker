@@ -250,6 +250,7 @@ func closeConnection(conn net.Conn) {
 }
 
 func updateConfig(cfg *config, args cli.Args) error {
+	// validate exact number of arguments
 	if len(args) != 2 {
 		return errors.New("Invalid arguments provided")
 	}
@@ -257,12 +258,14 @@ func updateConfig(cfg *config, args cli.Args) error {
 	n := strings.Title(args[0])
 	v := args[1]
 
+	// check if the field argument exists in our configuration model
 	t := reflect.ValueOf(cfg).Elem()
 	_, found := t.Type().FieldByName(n)
 	if !found {
 		return fmt.Errorf("'%s' is not a valid configuration field", n)
 	}
 
+	// transform the type of the value to be usable for our configuration model
 	var value interface{}
 	if v == "true" {
 		value = true
@@ -271,9 +274,9 @@ func updateConfig(cfg *config, args cli.Args) error {
 	} else if tmp, err := strconv.Atoi(v); err == nil {
 		value = tmp
 	} else {
+		// it's not a bool, it's not an int, it's your problem now
 		value = v
 	}
-
 	vT := reflect.TypeOf(value)
 	if vT.Kind() != t.FieldByName(n).Type().Kind() {
 		return fmt.Errorf("'%s' is not a valid configuration value for '%s'. Expected '%s'", vT.Kind(), n, t.FieldByName(n).Type().Kind())
@@ -286,6 +289,7 @@ func updateConfig(cfg *config, args cli.Args) error {
 	}
 	fT.Set(reflect.ValueOf(value))
 
+	// write the configuration to disk or return the failure
 	return writeConfig(cfg)
 }
 
