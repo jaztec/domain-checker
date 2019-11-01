@@ -109,7 +109,6 @@ func (s *server) handle(c *client) {
 			log.Println("'done' channel closed")
 			return
 		case cmd := <-c.commands:
-			log.Printf("Process command '%v'", cmd)
 			switch cmd.name {
 			case "AUTH":
 				if cmd.params[0] == s.token {
