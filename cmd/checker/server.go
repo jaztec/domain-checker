@@ -49,35 +49,13 @@ func (c *client) read() {
 			continue
 		}
 		name := strings.ToUpper(cmd[0])
-
-		switch name {
-		case "ADD":
-			fallthrough
-		case "AUTH":
-			fallthrough
-		case "REMOVE":
-			if len(cmd) < 2 {
-				break
-			}
-			c.commands <- command{
-				name:   name,
-				params: []string{cmd[1]},
-			}
-
-			if len(cmd) < 2 {
-				break
-			}
-		case "LIST":
-			fallthrough
-		case "EXIT":
-			fallthrough
-		case "QUIT":
-			fallthrough
-		case "CLOSE":
-			c.commands <- command{
-				name:   name,
-				params: []string{},
-			}
+		params := make([]string, len(cmd)-1)
+		for i := 1; i < len(cmd); i++ {
+			params[i-1] = cmd[i]
+		}
+		c.commands <- command{
+			name:   name,
+			params: params,
 		}
 	}
 }
@@ -161,11 +139,7 @@ func (s *server) handle(c *client) {
 					res += domain + " "
 				}
 				c.write(res)
-			case "EXIT":
-				return
-			case "QUIT":
-				return
-			case "CLOSE":
+			case "EXIT", "QUIT", "CLOSE":
 				return
 			default:
 				// ignore

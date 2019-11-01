@@ -267,9 +267,9 @@ func updateConfig(cfg *config, args cli.Args) error {
 
 	// transform the type of the value to be usable for our configuration model
 	var value interface{}
-	if v == "true" {
+	if strings.ToLower(v) == "true" {
 		value = true
-	} else if v == "false" {
+	} else if strings.ToLower(v) == "false" {
 		value = false
 	} else if tmp, err := strconv.Atoi(v); err == nil {
 		value = tmp
