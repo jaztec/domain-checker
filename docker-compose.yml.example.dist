@@ -15,5 +15,7 @@ services:
       - REDIS_DSN
       - REDIS_PASSWORD
       - REDIS_DB
+      - TRANSIP_ACCOUNT_NAME
+      - TRANSIP_KEY_FILE_PATH
     volumes:
       - ./certs:/var/certs:ro
