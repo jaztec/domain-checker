@@ -7,7 +7,8 @@ require (
 	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
+	github.com/stretchr/testify v1.7.1 // indirect
 	github.com/transip/gotransip v5.8.2+incompatible
 	github.com/urfave/cli v1.22.1
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.2.8
 )
